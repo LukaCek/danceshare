@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}home{% endblock %}
+
+{% block main %}
+<form class="form-inline" style="background-color: #160d1c; padding: 10px;">
+    <input style="border-radius: 50px;" class="form-control mr-sm-2" type="search" placeholder="Search"
+        aria-label="Search">
+</form>
+<div class="container text-center">
+    <div class="row row-cols-auto">
+        {% for video in videos %}
+        <div class="card h-100">
+            <!-- Product video-->
+            {% if video[0] %}
+            <video controls>
+                <source src="{{ url_for('static', filename='uploads/vid/' + video[0]) }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            {% endif %}
+            {{ video[1] }}
+            <!-- Product details-->
+            <div class="card-body p-4">
+                <div class="text-center">
+                    <!-- Product name-->
+                    <h5 class="fw-bolder">{{ name }}</h5>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        <div style="margin-bottom: 300px;"></div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}{% endblock %}
