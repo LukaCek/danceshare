@@ -76,7 +76,7 @@ def index():
 @app.route("/delete_account", methods=["GET", "POST"])
 @login_required
 def delete_account():
-    print("TODO")
+    print("TODO TODO")
 
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
