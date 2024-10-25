@@ -32,10 +32,6 @@ document.querySelector('form').addEventListener('submit', function(event) {
       console.log(`Uploaded: ${percent}%`);
       progressBar.style.width = `${percent}%`;
       progressBar.textContent = `${percent}%`;
-
-      // add progress bar
     });
-    xhr.open('POST', '/upload', true);
-    xhr.send(formData);
 });
 
