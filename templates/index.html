@@ -11,18 +11,18 @@
     <div class="row row-cols-auto">
         {% for video in videos %}
         <div class="card h-100">
-            <!-- Product video-->
+            <!-- video's video-->
             {% if video[0] %}
             <video controls>
-                <source src="{{ url_for('static', filename='uploads/vid/' + video[0]) }}" type="video/mp4">
+                <source src="{{ video[0] }}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
             {% endif %}
             {{ video[1] }}
-            <!-- Product details-->
+            <!-- video's details-->
             <div class="card-body p-4">
                 <div class="text-center">
-                    <!-- Product name-->
+                    <!-- video's name-->
                     <h5 class="fw-bolder">{{ name }}</h5>
                 </div>
             </div>
