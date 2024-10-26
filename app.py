@@ -3,8 +3,11 @@ import sqlite3
 from flask import Flask, flash, redirect, render_template, request, session, g, url_for
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
+import random
 
+import video_helper
 from helpers import login_required, allowed_file
+from tomp4 import convert_to_mp4
 
 UPLOAD_FOLDER = 'static/uploads/vid/'
 
@@ -37,9 +40,11 @@ if not os.path.exists(DATABASE):
             name TEXT NOT NULL,
             filepath TEXT NOT NULL,
             user_id INTEGER NOT NULL,
+            image_path TEXT,
             filetype TEXT NOT NULL,
             description TEXT,
             group_id TEXT,
+            time INTEGER,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     ''')
@@ -168,7 +173,7 @@ def uploade():
 
         # Check if file was uploaded
         if not file:
-            return render_template("uploade.html", error="No file was uploaded"), 400
+            return render_template("uploade.html", error="No file was uploaded."), 400
 
         # conect to db
         con = sqlite3.connect(DATABASE)
@@ -181,33 +186,48 @@ def uploade():
             id = id_temp[0] + 1
         else:
             id = 1
+        
 
-        # check if file type is mp4
+        # rename file
+        file.filename = f"{session['user_id']}_{random.randint(1, 9999)}.{file.filename.split('.')[-1].lower()}"
+
+        # Convert to mp4
         filetype = file.filename.split('.')[-1].lower()
         if filetype != 'mp4':
             print("Converting to mp4")
-            # file = convert_to_mp4(file)
-            print ("TODO: convert to mp4")
-            print("Converted to mp4")
+            converted_file = convert_to_mp4(file)
+            if converted_file is not None:
+                file = converted_file
+                print("Converted to mp4")
 
-        file_path = f"{UPLOAD_FOLDER}{id}.mp4"
-        print(f"File path: {file_path}")
+        file_name = f"{id}.mp4"
 
 
-        cur.execute("INSERT INTO `videos` (`name`, `filepath`, `user_id`, `filetype`, `description`, `group_id`) VALUES (?, ?, ?, ?, ?, ?)"
-                    , (name, file_path, session["user_id"], filetype, description, group))
+        cur.execute("INSERT INTO `videos` (`name`, `filename`, `user_id`, `filetype`, `description`, `group_id`) VALUES (?, ?, ?, ?, ?, ?)"
+                    , (name, file_name, session["user_id"], filetype, description, group))
         con.commit()
 
         if file and allowed_file(file.filename, ALLOWED_EXTENSIONS):
-            file.save(f"{file_path}")
+            file.save(f"{UPLOAD_FOLDER}/{file_name}")
         else:
             return render_template("uploade.html", error="File type is not allowed", types=ALLOWED_EXTENSIONS), 400
-        return redirect("/upload")
+
+        # Get time from video
+        time = video_helper.video_length(file_path)
+
+        # Create picture
+        video_helper.extract_frame_at(file_path)
+
+        cur.execute("INSERT INTO `videos` (`name`, `filepath`, `user_id`, `filetype`, `description`, `group_id`, `time`, `image_path`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                    , (name, file_path, session["user_id"], filetype, description, group, time, image_path))
+        con.commit()
+
+
+        return render_template("uploade.html", massage="Video uploaded successfully")
     else:
-        return render_template("up2.html")
+        return render_template("uploade.html")
 
 @app.errorhandler(404)
-def page_not_found(e): # e must be in there
-    # note that we set the 404 status, this is what it catches
+def page_not_found(e):
     return render_template('404.html'), 404
-app.run(debug=True, host="0.0.0.0", port=80)
+app.run(debug=True, host="0.0.0.0", port=8000)
