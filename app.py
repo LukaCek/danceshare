@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import login_required, allowed_file
 
-UPLOAD_FOLDER = 'static/uploads/vid'
+UPLOAD_FOLDER = 'static/uploads/vid/'
 
 # Preverimo ali mapa za nalaganje datotek že obstaja, če ne jo ustvarimo
 if not os.path.exists(UPLOAD_FOLDER):
@@ -35,7 +35,7 @@ if not os.path.exists(DATABASE):
         CREATE TABLE IF NOT EXISTS videos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            filename TEXT NOT NULL,
+            filepath TEXT NOT NULL,
             user_id INTEGER NOT NULL,
             filetype TEXT NOT NULL,
             description TEXT,
@@ -67,7 +67,7 @@ def index():
     cur = con.cursor()
 
     # get videos from user
-    cur.execute("SELECT filename, name, description FROM videos WHERE user_id = :user_id",{"user_id": session["user_id"]})
+    cur.execute("SELECT filepath, name, description FROM videos WHERE user_id = :user_id",{"user_id": session["user_id"]})
     videos = cur.fetchall()
     num_videos = len(videos)
 
@@ -190,15 +190,16 @@ def uploade():
             print ("TODO: convert to mp4")
             print("Converted to mp4")
 
-        file_name = f"{id}.mp4"
+        file_path = f"{UPLOAD_FOLDER}{id}.mp4"
+        print(f"File path: {file_path}")
 
 
-        cur.execute("INSERT INTO `videos` (`name`, `filename`, `user_id`, `filetype`, `description`, `group_id`) VALUES (?, ?, ?, ?, ?, ?)"
-                    , (name, file_name, session["user_id"], filetype, description, group))
+        cur.execute("INSERT INTO `videos` (`name`, `filepath`, `user_id`, `filetype`, `description`, `group_id`) VALUES (?, ?, ?, ?, ?, ?)"
+                    , (name, file_path, session["user_id"], filetype, description, group))
         con.commit()
 
         if file and allowed_file(file.filename, ALLOWED_EXTENSIONS):
-            file.save(f"{UPLOAD_FOLDER}/{file_name}")
+            file.save(f"{file_path}")
         else:
             return render_template("uploade.html", error="File type is not allowed", types=ALLOWED_EXTENSIONS), 400
         return redirect("/upload")
