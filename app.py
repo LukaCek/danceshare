@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import video_helper
 from flask import Flask, flash, redirect, render_template, request, session, g, url_for
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -37,9 +38,11 @@ if not os.path.exists(DATABASE):
             name TEXT NOT NULL,
             filepath TEXT NOT NULL,
             user_id INTEGER NOT NULL,
+            image_path TEXT,
             filetype TEXT NOT NULL,
             description TEXT,
             group_id TEXT,
+            time INTEGER,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     ''')
@@ -191,23 +194,31 @@ def uploade():
             print("Converted to mp4")
 
         file_path = f"{UPLOAD_FOLDER}{id}.mp4"
+        image_path = f"{UPLOAD_FOLDER}{id}.jpg"
         print(f"File path: {file_path}")
-
-
-        cur.execute("INSERT INTO `videos` (`name`, `filepath`, `user_id`, `filetype`, `description`, `group_id`) VALUES (?, ?, ?, ?, ?, ?)"
-                    , (name, file_path, session["user_id"], filetype, description, group))
-        con.commit()
-
+        
+        # Save file
         if file and allowed_file(file.filename, ALLOWED_EXTENSIONS):
             file.save(f"{file_path}")
         else:
             return render_template("uploade.html", error="File type is not allowed", types=ALLOWED_EXTENSIONS), 400
+
+        # Get time from video
+        time = video_helper.video_length(file_path)
+
+        # Create picture
+        video_helper.extract_frame_at(file_path)
+
+        cur.execute("INSERT INTO `videos` (`name`, `filepath`, `user_id`, `filetype`, `description`, `group_id`, `time`, `image_path`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                    , (name, file_path, session["user_id"], filetype, description, group, time, image_path))
+        con.commit()
+
+
         return redirect("/upload")
     else:
         return render_template("up2.html")
 
 @app.errorhandler(404)
-def page_not_found(e): # e must be in there
-    # note that we set the 404 status, this is what it catches
+def page_not_found(e):
     return render_template('404.html'), 404
 app.run(debug=True, host="0.0.0.0", port=80)
