@@ -201,6 +201,8 @@ def uploade():
                 print("Converted to mp4")
 
         file_name = f"{id}.mp4"
+        file_path = f"{UPLOAD_FOLDER}{id}.mp4"
+        image_path = f"{UPLOAD_FOLDER}{id}.jpg"
 
 
         cur.execute("INSERT INTO `videos` (`name`, `filename`, `user_id`, `filetype`, `description`, `group_id`) VALUES (?, ?, ?, ?, ?, ?)"
