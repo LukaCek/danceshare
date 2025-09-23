@@ -1,0 +1,20 @@
+services:
+  main_app:
+    container_name: DANCEshare
+    image: danceshare:latest
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    volumes:
+      - ./DANCEshare/db:/app/data
+      - ./DANCEshare/uploads:/app/static/uploads
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - danceshare_network
+
+networks:
+  danceshare_network:
+    driver: bridge
