@@ -14,7 +14,7 @@ from helpers import login_required, allowed_file
 from tomp4 import convert_to_mp4, video_size_save
 
 UPLOAD_FOLDER = 'static/uploads/vid/'
-SIZE_ALLOWED = 2 * 1024 * 1024 * 1024
+DEFAULT_SIZE_ALLOWED = 2 * 1024 * 1024 * 1024
 DATABASE = 'data/danceshare.db'
 ALLOWED_EXTENSIONS = [
         'mp4', 'mov', 'avi', 'mkv', 'wmv', 'flv', 'webm',
@@ -42,6 +42,7 @@ if not os.path.exists(DATABASE):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
             hash TEXT NOT NULL,
+            max_size INTEGER,
             size INTEGER
         );
     ''')
@@ -80,6 +81,7 @@ if not os.path.exists(DATABASE):
             group_id INTEGER,
             time INTEGER,
             file_size INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     ''')
@@ -138,6 +140,7 @@ def search():
         FROM group_members gm 
         JOIN groups g ON gm.group_id = g.id 
         WHERE gm.user_id = ?
+        ORDER BY g.id DESC
     """, (session["user_id"],))
     groupsUserIsIn = cur.fetchall()
     # get videos from user
@@ -462,6 +465,13 @@ def uploade():
         size = t[0]
         if size is None:
             size = 0
+        
+        # Get user max size
+        cur.execute("SELECT max_size FROM users WHERE id = :user_id",{"user_id": session["user_id"]})
+        t = cur.fetchone()
+        SIZE_ALLOWED = t[0]
+        if SIZE_ALLOWED is None:
+            SIZE_ALLOWED = DEFAULT_SIZE_ALLOWED
 
         if size + file_size > SIZE_ALLOWED:
             error = f"Space limit has been reached {SIZE_ALLOWED / 1024 / 1024 / 1024} GB. <br>You have {SIZE_ALLOWED / 1024 / 1024 / 1024 - size / 1024 / 1024 / 1024} <br>Upgrade your plan or delete some videos"

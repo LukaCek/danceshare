@@ -1,2 +1,6 @@
-DANCEshare
 venv
+__pycache__/
+flask_session/
+static/uploads/
+data/
+DANCEshare
