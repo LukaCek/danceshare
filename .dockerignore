@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+flask_session/
+static/uploads/
+data/
+temp_uploads/
+README.md
+LICENSE
+DANCEshare
+.gitignore
+docker-compose.yml

@@ -3,7 +3,7 @@ services:
     container_name: DANCEshare
     image: danceshare:latest
     ports:
-      - "8080:8080"
+      - "8081:8080"
     restart: unless-stopped
     volumes:
       - ./DANCEshare/db:/app/data
@@ -12,8 +12,8 @@ services:
       resources:
         limits:
           memory: 1G
-    networks:
-      - danceshare_network
+    #networks:
+      #- danceshare_network
 
 networks:
   danceshare_network:
