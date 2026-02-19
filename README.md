@@ -54,12 +54,10 @@
 
 2. Create a `docker-compose.yaml` file in the root directory of the project with the following contents:
 ```
-version: '3.8'
-
 services:
   main_app:
     container_name: DANCEshare
-    image: cekluka/danceshare:1.10
+    image: cekluka/danceshare:latest
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -88,3 +86,4 @@ docker compose up
 Project's source code is available on [GitHub](https://github.com/LukaCek/danceshare).
 
 If you want to contribute to the project, you can [fork the repository](https://github.com/LukaCek/danceshare/fork).
+
